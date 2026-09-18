@@ -1,0 +1,11 @@
+.build/
+build/
+.DS_Store
+*.xcuserstate
+xcuserdata/
+.swiftpm/
+*.xcodeproj/xcuserdata/
+*.xcodeproj/project.xcworkspace/xcuserdata/
+
+# Recorder sessions are multi-gigabyte — keep them out of the repo.
+demo-data/
