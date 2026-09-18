@@ -4,7 +4,11 @@ A native macOS app that turns a folder of multichannel field-recorder WAVs into 
 folder of named, trimmed, per-track stems — the weekly 10–15 minute DAW chore,
 reduced to a couple of clicks.
 
-Built to [SPEC.md](SPEC.md) and the screens in [mockups/](mockups).
+> ⚠️ **Warning:** This project is vibe coded (built largely with AI assistance)
+> and may be buggy. Use at your own risk, and back up your source recordings
+> before exporting.
+
+Built to [SPEC.md](SPEC.md)
 
 ## Requirements
 
