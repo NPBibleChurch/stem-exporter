@@ -21,6 +21,8 @@ public struct ExportPlan: Sendable {
     public var items: [PlannedStem]
     /// Destination files that already exist and would be replaced.
     public var collisions: [URL]
+    /// The container and codec the engine writes these files in.
+    public var encoding: ExportEncoding = .default
 
     public var hasCollisions: Bool { !collisions.isEmpty }
 }
@@ -39,6 +41,7 @@ public enum ExportPlanner {
         fileManager: FileManager = .default
     ) -> ExportPlan {
         let folder = job.resolvedFolder(date: date)
+        let fileExtension = job.encoding.fileExtension
         let effectivePolicy = policy ?? job.collisionPolicy
         var items: [PlannedStem] = []
         var claimed = Set<String>()
@@ -53,7 +56,7 @@ public enum ExportPlanner {
             )
 
             var candidate = base
-            var url = folder.appendingPathComponent(candidate).appendingPathExtension("wav")
+            var url = folder.appendingPathComponent(candidate).appendingPathExtension(fileExtension)
             let existsOnDisk = fileManager.fileExists(atPath: url.path)
             if existsOnDisk { collisions.append(url) }
 
@@ -66,7 +69,7 @@ public enum ExportPlanner {
             if mustRename {
                 repeat {
                     candidate = "\(base) (\(suffix))"
-                    url = folder.appendingPathComponent(candidate).appendingPathExtension("wav")
+                    url = folder.appendingPathComponent(candidate).appendingPathExtension(fileExtension)
                     suffix += 1
                 } while claimed.contains(candidate.lowercased()) || fileManager.fileExists(atPath: url.path)
             }
@@ -75,6 +78,6 @@ public enum ExportPlanner {
             items.append(PlannedStem(stem: stem, url: url))
         }
 
-        return ExportPlan(folder: folder, items: items, collisions: collisions)
+        return ExportPlan(folder: folder, items: items, collisions: collisions, encoding: job.encoding)
     }
 }

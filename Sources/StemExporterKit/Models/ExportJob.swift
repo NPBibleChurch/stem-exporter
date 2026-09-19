@@ -73,19 +73,23 @@ public struct ExportJob: Sendable {
     public var collisionPolicy: CollisionPolicy
     /// Put the stems in a dated subfolder of the destination instead of loose in it.
     public var createDatedSubfolder: Bool
+    /// The container and codec the stems are written in.
+    public var encoding: ExportEncoding
 
     public init(
         outputFolder: URL,
         sessionName: String,
         namingPattern: NamingPattern = .default,
         collisionPolicy: CollisionPolicy = .ask,
-        createDatedSubfolder: Bool = false
+        createDatedSubfolder: Bool = false,
+        encoding: ExportEncoding = .default
     ) {
         self.outputFolder = outputFolder
         self.sessionName = sessionName
         self.namingPattern = namingPattern
         self.collisionPolicy = collisionPolicy
         self.createDatedSubfolder = createDatedSubfolder
+        self.encoding = encoding
     }
 
     /// The folder the files actually land in, once the dated-subfolder option is applied.

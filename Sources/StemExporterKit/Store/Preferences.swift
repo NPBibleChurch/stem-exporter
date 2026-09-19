@@ -24,6 +24,8 @@ public final class Preferences: @unchecked Sendable {
         static let namingPattern = "namingPattern"
         static let collisionPolicy = "collisionPolicy"
         static let createDatedSubfolder = "createDatedSubfolder"
+        static let exportFormat = "exportFormat"
+        static let lossyBitrateKbps = "lossyBitrateKbps"
         static let silenceThresholdDB = "silenceThresholdDB"
         static let autoSkipEmptyTracks = "autoSkipEmptyTracks"
         static let emptyTrackThresholdDB = "emptyTrackThresholdDB"
@@ -59,6 +61,22 @@ public final class Preferences: @unchecked Sendable {
     public var createDatedSubfolder: Bool {
         get { defaults.bool(forKey: Key.createDatedSubfolder) }
         set { defaults.set(newValue, forKey: Key.createDatedSubfolder) }
+    }
+
+    /// The container and codec exports are written in.
+    public var exportEncoding: ExportEncoding {
+        get {
+            let format = ExportFormat(rawValue: defaults.string(forKey: Key.exportFormat) ?? "") ?? .wav
+            let stored = defaults.integer(forKey: Key.lossyBitrateKbps)
+            return ExportEncoding(
+                format: format,
+                lossyBitrateKbps: stored == 0 ? ExportEncoding.defaultBitrateKbps : stored
+            )
+        }
+        set {
+            defaults.set(newValue.format.rawValue, forKey: Key.exportFormat)
+            defaults.set(newValue.lossyBitrateKbps, forKey: Key.lossyBitrateKbps)
+        }
     }
 
     public var silenceThresholdDB: Double {

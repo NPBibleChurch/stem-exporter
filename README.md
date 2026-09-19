@@ -43,7 +43,7 @@ it still works, but it has no bundle identifier, so TCC prompts and saved folder
 permissions aren't shared with the bundled build.
 
 ```bash
-swift test          # 59 tests over the audio engine, models and stores
+swift test          # 66 tests over the audio engine, models and stores
 ```
 
 ### Try it without a recorder
@@ -68,6 +68,8 @@ Sources/
     Audio/
       WAVFile            RIFF/RF64 chunk walker → byte offsets + PCM layout
       WAVWriter          streaming BWF writer, promotes itself to RF64 past 4 GB
+      EncodedStemWriter  AIFF/FLAC/ALAC/AAC writer over the system codecs
+      ExportFormat       the output format choices and their settings
       SampleCodec        raw little-endian PCM packing, gain, hard limiting
       SessionLoader      folder → ordered, validated, concatenated session
       SessionReader      random access over the session's virtual timeline
@@ -97,11 +99,23 @@ The visible consequence: in the progress window every stem advances together
 rather than a queue working down one file at a time. That's the architecture being
 honest about what it's doing.
 
-**No `AVAudioFile`.** The WAV structure is parsed by hand so the engine works from
-exact byte offsets: trim is then just reading a different byte range, and multi-GB
-files are never a problem. Chunks other than `fmt `, `data`, `bext` and `ds64` are
-stepped over without being read, which is what keeps it working across recorder
-firmware versions.
+**The source is never decoded through a framework.** The WAV structure is parsed
+by hand so the engine works from exact byte offsets: trim is then just reading a
+different byte range, and multi-GB files are never a problem. Chunks other than
+`fmt `, `data`, `bext` and `ds64` are stepped over without being read, which is
+what keeps it working across recorder firmware versions.
+
+**Output format is a writer, not a second pass.** WAV stays the pass-through
+case — source bit depth and sample rate, BWF metadata, no conversion at all.
+Choosing AIFF, FLAC, Apple Lossless or AAC swaps the per-stem writer for one that
+feeds the same blocks to a system codec, so the single read pass, the gain, the
+clip detection and the flat memory profile are identical whatever comes out the
+other end.
+
+**There is no MP3 option.** macOS decodes MP3 but has never shipped an encoder
+for it, so offering MP3 would mean bundling a third-party one. AAC is the lossy
+option instead: smaller than MP3 at the same quality, and playable anywhere MP3
+is.
 
 **Clipping is surfaced before you export.** Peaks are cached at unity gain, so
 changing a track's dB rescales the cached envelope instantly and the waveform
@@ -161,7 +175,11 @@ session folders rather than re-prompting each launch.
   both sides empty before it counts.
 - **File naming** defaults to `<Session> - <NN> - <Name>.wav`, zero-padded so
   Finder sorts stems in input order. The pattern is editable in Settings with
-  `{session}`, `{track}` and `{name}` tokens.
+  `{session}`, `{track}` and `{name}` tokens; the extension follows the format.
+- **Output format** is WAV (BWF) by default, with AIFF, FLAC, Apple Lossless and
+  AAC (128/192/256/320 kbps) in Settings › Export Defaults. WAV is a byte-for-byte
+  pass-through of the source; the rest are encoded by macOS itself, so nothing
+  extra is installed. MP3 isn't offered — macOS has no MP3 encoder.
 - **Track count is never assumed.** It comes from the file. A template built for a
   different count still opens the session: slots pointing past the last channel are
   dropped with a message, and anything uncovered falls back to "Track N".

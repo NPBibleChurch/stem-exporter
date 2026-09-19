@@ -469,7 +469,8 @@ final class AppModel {
             sessionName: session.name,
             namingPattern: preferences.namingPattern,
             collisionPolicy: preferences.collisionPolicy,
-            createDatedSubfolder: preferences.createDatedSubfolder
+            createDatedSubfolder: preferences.createDatedSubfolder,
+            encoding: preferences.exportEncoding
         )
         let plan = ExportPlanner.plan(session: session, stems: exportingStems, job: job)
 
@@ -489,7 +490,8 @@ final class AppModel {
             sessionName: session.name,
             namingPattern: preferences.namingPattern,
             collisionPolicy: policy,
-            createDatedSubfolder: preferences.createDatedSubfolder
+            createDatedSubfolder: preferences.createDatedSubfolder,
+            encoding: preferences.exportEncoding
         )
         run(plan: ExportPlanner.plan(session: session, stems: exportingStems, job: job, policy: policy))
     }

@@ -275,6 +275,8 @@ struct ExportDefaultsSettings: View {
     @State private var pattern = NamingPattern.default.pattern
     @State private var policy = CollisionPolicy.ask
     @State private var datedSubfolder = false
+    @State private var format = ExportFormat.wav
+    @State private var bitrate = ExportEncoding.defaultBitrateKbps
 
     var body: some View {
         Form {
@@ -314,11 +316,34 @@ struct ExportDefaultsSettings: View {
             }
 
             Section("Format") {
-                LabeledContent("Output") {
-                    Text("WAV (BWF), same bit depth and sample rate as the source")
-                        .foregroundStyle(palette.secondaryLabel)
+                Picker("Output", selection: $format) {
+                    ForEach(ExportFormat.allCases) { option in
+                        Text(option.title).tag(option)
+                    }
                 }
-                Text("No resampling or conversion — stems are written in the source’s own format, with BWF metadata pointing back at the session.")
+                .onChange(of: format) { _, value in
+                    model.preferences.exportEncoding = ExportEncoding(
+                        format: value,
+                        lossyBitrateKbps: bitrate
+                    )
+                }
+                if format.usesBitrate {
+                    Picker("Bitrate", selection: $bitrate) {
+                        ForEach(ExportEncoding.bitrateChoices, id: \.self) { kbps in
+                            Text("\(kbps) kbps").tag(kbps)
+                        }
+                    }
+                    .onChange(of: bitrate) { _, value in
+                        model.preferences.exportEncoding = ExportEncoding(
+                            format: format,
+                            lossyBitrateKbps: value
+                        )
+                    }
+                }
+                Text(format.detail)
+                    .font(.system(size: 11))
+                    .foregroundStyle(palette.tertiaryLabel)
+                Text(ExportFormat.mp3Note)
                     .font(.system(size: 11))
                     .foregroundStyle(palette.tertiaryLabel)
             }
@@ -328,6 +353,9 @@ struct ExportDefaultsSettings: View {
             pattern = model.preferences.namingPattern.pattern
             policy = model.preferences.collisionPolicy
             datedSubfolder = model.preferences.createDatedSubfolder
+            let encoding = model.preferences.exportEncoding
+            format = encoding.format
+            bitrate = encoding.lossyBitrateKbps
         }
     }
 
@@ -336,6 +364,6 @@ struct ExportDefaultsSettings: View {
             session: "2026-09-13 Service",
             trackNumbers: [3],
             stemName: "Piano"
-        ) + ".wav"
+        ) + ".\(format.fileExtension)"
     }
 }

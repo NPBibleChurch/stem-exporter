@@ -72,7 +72,7 @@ One global In point and one Out point apply to every output stem, since all 32 t
 
 ## Export settings
 
-- **Format:** WAV (BWF), same bit depth and sample rate as the source — no resampling or conversion in v1 (source is typically 24-bit/48kHz).
+- **Format:** WAV (BWF) by default, same bit depth and sample rate as the source — no resampling or conversion on that path (source is typically 24-bit/48kHz). AIFF, FLAC, Apple Lossless and AAC (128/192/256/320 kbps) are selectable in Settings › Export Defaults and are encoded by the system codecs; sample rate and channel count are still passed through untouched. MP3 is deliberately absent: macOS ships an MP3 decoder but no encoder, so AAC is the lossy option.
 - **File naming:** `<Session Name> - <Track#> - <Track Name>.wav by default (e.g. "2026-09-13 Service - 03 - Piano.wav"), track number zero-padded to two digits so Finder sorts stems in input order; session name editable per export, pattern itself configurable later`.
 - **Stereo pairs:** exported as one interleaved stereo WAV, not two mono files.
 - **Destination:** a chosen folder; the app remembers and defaults to the last-used folder, with an option to create a dated subfolder per session automatically.
@@ -162,7 +162,7 @@ See the linked mockup artifact for the full-resolution screens.
 ## Assumptions & open questions
 
 - **File naming pattern** is a first guess (`<Session Name> - <Track Name>.wav`); confirm the exact pattern you want, including whether track numbers should prefix the name for sorting (e.g. `03 - Piano.wav`).
-- **Source format** confirmed: always 24-bit/48kHz BWF WAV, so export passes bit depth and sample rate through unchanged — no format picker needed in v1.
+- **Source format** confirmed: always 24-bit/48kHz BWF WAV, so export passes bit depth and sample rate through unchanged. The format picker added after v1 only changes the container and codec written out; BWF metadata rides along on the WAV path only.
 - **Session grouping** superseded by folder-based import (see Combining multi-part sessions): the app now processes whatever WAV files sit in the folder you point it at, in filename order, no minimum or numbering pattern required — confirmed this covers the real-world case, per the `5D319CBD` example.
 - **Distribution** confirmed: Developer ID, direct-download; minimum macOS 14 Sonoma; folder access persisted via security-scoped bookmarks so it doesn't re-prompt each launch; single session at a time, no session-history/reopen feature in v1.
 - **Snap-to-silence** and **dated subfolder on export** are included as small quality-of-life defaults; say if either should be cut for v1 simplicity.

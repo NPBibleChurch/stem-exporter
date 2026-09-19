@@ -5,6 +5,7 @@ public enum ExportError: LocalizedError {
     case invalidTrim
     case couldNotCreateFolder(URL)
     case couldNotOpenSource(URL)
+    case encoderUnavailable(String)
 
     public var errorDescription: String? {
         switch self {
@@ -16,6 +17,8 @@ public enum ExportError: LocalizedError {
             return "Couldn’t create “\(url.lastPathComponent)” in the destination folder."
         case .couldNotOpenSource(let url):
             return "Couldn’t read \(url.lastPathComponent)."
+        case .encoderUnavailable(let format):
+            return "This Mac couldn’t start the \(format) encoder. Try exporting as WAV."
         }
     }
 }
@@ -108,7 +111,7 @@ public final class ExportEngine {
         // MARK: Writers
 
         let stemCount = items.count
-        var writers: [WAVWriter] = []
+        var writers: [StemWriter] = []
         writers.reserveCapacity(stemCount)
         var queues: [DispatchQueue] = []
         queues.reserveCapacity(stemCount)
@@ -126,9 +129,10 @@ public final class ExportEngine {
                 isFloat: format.isFloat
             )
             do {
-                let writer = try WAVWriter(
+                let writer = try StemWriterFactory.make(
                     url: item.url,
                     format: stemFormat,
+                    encoding: plan.encoding,
                     broadcast: broadcastMetadata(for: item.stem, startFrame: startFrame)
                 )
                 writers.append(writer)
