@@ -203,7 +203,7 @@ final class AppModel {
 
     func setGain(_ dB: Double, forTrack track: Int) {
         guard session != nil else { return }
-        let clamped = min(max(dB, -60), 24)
+        let clamped = TemplateSlot.clampGain(dB)
         let templateGain = selectedTemplate?.slot(containingTrack: track)?.gainDB ?? 0
         if clamped == templateGain {
             session?.gainOverridesDB.removeValue(forKey: track)

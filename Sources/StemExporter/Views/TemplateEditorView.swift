@@ -380,6 +380,7 @@ enum EditorColumn {
 struct GainField: View {
     @Binding var gainDB: Double
     @State private var text: String = "0.0"
+    @FocusState private var focused: Bool
     @Environment(\.palette) private var palette
 
     var body: some View {
@@ -389,19 +390,38 @@ struct GainField: View {
                 .font(.monoDigits(12.5))
                 .multilineTextAlignment(.trailing)
                 .frame(width: 58)
-                .onSubmit(commit)
+                .focused($focused)
+                // Saving, or clicking straight into another row, never sends a
+                // Return — so the slot takes each keystroke that parses, and
+                // focus loss only rounds the text to match.
+                .onChange(of: text) { _, _ in commit(normalizingText: false) }
+                .onSubmit { commit(normalizingText: true) }
+                .onChange(of: focused) { _, isFocused in
+                    if !isFocused { commit(normalizingText: true) }
+                }
             Text("dB")
                 .font(.system(size: 10.5))
                 .foregroundStyle(palette.tertiaryLabel)
         }
-        .onAppear { text = String(format: "%.1f", gainDB) }
-        .onChange(of: gainDB) { _, new in text = String(format: "%.1f", new) }
+        .onAppear { text = Self.format(gainDB) }
+        .onChange(of: gainDB) { _, new in
+            // Reformatting mid-edit would fight the cursor: "3" → "3.0" as it's typed.
+            guard !focused else { return }
+            text = Self.format(new)
+        }
     }
 
-    private func commit() {
-        if let value = Double(text.replacingOccurrences(of: "+", with: "")) {
-            gainDB = min(max(value, -60), 24)
+    private func commit(normalizingText: Bool) {
+        let typed = text
+            .replacingOccurrences(of: "+", with: "")
+            .trimmingCharacters(in: .whitespaces)
+        if let value = Double(typed) {
+            gainDB = TemplateSlot.clampGain(value)
         }
-        text = String(format: "%.1f", gainDB)
+        if normalizingText { text = Self.format(gainDB) }
+    }
+
+    private static func format(_ dB: Double) -> String {
+        String(format: "%.1f", dB)
     }
 }

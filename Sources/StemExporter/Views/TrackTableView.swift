@@ -103,6 +103,8 @@ private struct TrackRow: View {
     @State private var gainDraft: String = ""
     @State private var isHovering = false
     @FocusState private var nameFocused: Bool
+    @FocusState private var gainFocused: Bool
+    @State private var isDraggingGain = false
 
     private var track: Int { stem.primaryTrack }
     private var peakTrack: PeakData.Track? { model.peakTrack(for: stem) }
@@ -129,8 +131,8 @@ private struct TrackRow: View {
         }
         .onHover { isHovering = $0 }
         .onAppear(perform: syncDrafts)
-        .onChange(of: stem.outputName) { _, _ in syncDrafts() }
-        .onChange(of: stem.gainDB) { _, _ in syncDrafts() }
+        .onChange(of: stem.outputName) { _, _ in syncNameDraft() }
+        .onChange(of: stem.gainDB) { _, _ in syncGainDraft() }
     }
 
     private var rowBackground: some View {
@@ -241,18 +243,30 @@ private struct TrackRow: View {
                                             lineWidth: willClip ? 1.5 : 1)
                             )
                     )
-                    .onSubmit(commitGain)
+                    .focused($gainFocused)
+                    // Clicking away — into another row, or straight at Export —
+                    // never sends a Return, so every keystroke that parses goes
+                    // to the model and leaving the field only tidies the text.
+                    .onChange(of: gainDraft) { _, _ in commitGain(normalizingText: false) }
+                    .onSubmit { commitGain(normalizingText: true) }
+                    .onChange(of: gainFocused) { _, focused in
+                        if !focused { commitGain(normalizingText: true) }
+                    }
                     // Dragging the field nudges the level, and the waveform above
                     // redraws as it moves — that's the point of doing it here.
                     .gesture(
                         DragGesture(minimumDistance: 2)
                             .onChanged { value in
+                                isDraggingGain = true
                                 let delta = -value.translation.height / 6
                                 let base = Double(gainDraft) ?? stem.gainDB
                                 let next = (base + delta / 10).rounded(toPlaces: 1)
                                 gainDraft = String(format: "%.1f", next)
                             }
-                            .onEnded { _ in commitGain() }
+                            .onEnded { _ in
+                                isDraggingGain = false
+                                commitGain(normalizingText: true)
+                            }
                     )
 
                 Text(willClip ? "clip" : "dB")
@@ -291,19 +305,42 @@ private struct TrackRow: View {
 
     private func syncDrafts() {
         nameDraft = stem.outputName
-        gainDraft = String(format: "%.1f", stem.gainDB)
+        gainDraft = Self.formatGain(stem.gainDB)
+    }
+
+    /// Each field re-reads the model only when it isn't mid-edit: rewriting the
+    /// text under the cursor would fight whoever is typing or dragging in it.
+    private func syncNameDraft() {
+        guard !nameFocused else { return }
+        nameDraft = stem.outputName
+    }
+
+    private func syncGainDraft() {
+        guard !gainFocused, !isDraggingGain else { return }
+        gainDraft = Self.formatGain(stem.gainDB)
     }
 
     private func commitName() {
         model.setName(nameDraft, forTrack: track)
     }
 
-    private func commitGain() {
-        guard let value = Double(gainDraft.replacingOccurrences(of: "+", with: "")) else {
-            syncDrafts()
+    private func commitGain(normalizingText: Bool) {
+        let typed = gainDraft
+            .replacingOccurrences(of: "+", with: "")
+            .trimmingCharacters(in: .whitespaces)
+        guard let value = Double(typed) else {
+            // Half-typed text ("-", "") isn't a level yet; only a field being
+            // left behind gets snapped back to what the model actually holds.
+            if normalizingText { gainDraft = Self.formatGain(stem.gainDB) }
             return
         }
-        model.setGain(value, forTrack: track)
+        let clamped = TemplateSlot.clampGain(value)
+        model.setGain(clamped, forTrack: track)
+        if normalizingText { gainDraft = Self.formatGain(clamped) }
+    }
+
+    private static func formatGain(_ dB: Double) -> String {
+        String(format: "%.1f", dB)
     }
 }
 

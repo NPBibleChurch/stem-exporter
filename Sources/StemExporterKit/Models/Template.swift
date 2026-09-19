@@ -30,6 +30,14 @@ public struct TemplateSlot: Identifiable, Codable, Hashable, Sendable {
     public var isStereo: Bool { trackNumbers.count == 2 }
     public var primaryTrack: Int { trackNumbers.first ?? 0 }
 
+    /// The trim range every gain field offers and the model enforces. Kept in
+    /// one place so a value typed into a field and the value stored can't drift.
+    public static let gainRangeDB: ClosedRange<Double> = -60...24
+
+    public static func clampGain(_ dB: Double) -> Double {
+        min(max(dB, gainRangeDB.lowerBound), gainRangeDB.upperBound)
+    }
+
     /// "Trk 5" or "Trk 5+6".
     public var sourceLabel: String {
         "Trk " + trackNumbers.map(String.init).joined(separator: "+")
