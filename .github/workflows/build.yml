@@ -1,0 +1,36 @@
+name: Build
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+# A newer push to main supersedes an in-flight build of an older commit.
+concurrency:
+  group: build-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: xcode-27
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Build app bundle
+        run: ./Scripts/build-app.sh release
+
+      - name: Zip app bundle
+        run: |
+          cd build
+          ditto -c -k --sequesterRsrc --keepParent StemExporter.app \
+            "StemExporter-${GITHUB_SHA::7}-macos.zip"
+
+      # Ad-hoc signed, not notarised
+      - name: Upload app bundle
+        uses: actions/upload-artifact@v7
+        with:
+          name: StemExporter-macos
+          path: build/StemExporter-*-macos.zip
+          if-no-files-found: error
