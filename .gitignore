@@ -9,3 +9,5 @@ xcuserdata/
 
 # Recorder sessions are multi-gigabyte — keep them out of the repo.
 demo-data/
+site/node_modules
+site/public/app.css

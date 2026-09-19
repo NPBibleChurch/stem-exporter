@@ -1,0 +1,192 @@
+<!doctype html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Stem Exporter — Weekly stems from your field recorder, in a couple of clicks</title>
+  <meta name="description" content="Stem Exporter is a native macOS app that turns a folder of multichannel field-recorder WAVs into named, trimmed, per-track stems." />
+  <link rel="icon" type="image/png" href="app-icon.png" />
+  <link rel="stylesheet" href="app.css" />
+</head>
+<body class="bg-neutral-950 text-neutral-100 antialiased">
+
+  <header class="border-b border-white/10">
+    <div class="mx-auto flex max-w-6xl items-center justify-between px-6 py-5">
+      <a href="#" class="flex items-center gap-3">
+        <img src="app-icon.png" alt="Stem Exporter icon" class="h-8 w-8 rounded-lg" />
+        <span class="text-lg font-semibold tracking-tight">Stem Exporter</span>
+      </a>
+      <nav class="hidden items-center gap-8 text-sm text-neutral-300 sm:flex">
+        <a href="#features" class="hover:text-white">Features</a>
+        <a href="#how-it-works" class="hover:text-white">How it works</a>
+        <a href="https://github.com/NPBibleChurch/stem-exporter" class="hover:text-white">GitHub</a>
+      </nav>
+      <a
+        href="https://github.com/NPBibleChurch/stem-exporter/releases"
+        class="rounded-full bg-white px-4 py-2 text-sm font-semibold text-neutral-950 transition hover:bg-neutral-200"
+      >
+        Download
+      </a>
+    </div>
+  </header>
+
+  <main>
+    <section class="relative overflow-hidden">
+      <div
+        class="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(99,102,241,0.25),_transparent_60%)]"
+      ></div>
+      <div class="relative mx-auto max-w-6xl px-6 py-24 text-center sm:py-32">
+        <p
+          class="mx-auto mb-6 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-1 text-xs font-medium text-neutral-300"
+        >
+          Native macOS app
+        </p>
+        <h1 class="mx-auto max-w-3xl text-4xl font-bold tracking-tight text-white sm:text-6xl">
+          Weekly stems, reduced to a couple of clicks
+        </h1>
+        <p class="mx-auto mt-6 max-w-2xl text-lg text-neutral-300">
+          Stem Exporter turns a folder of multichannel field-recorder WAVs into a folder of named,
+          trimmed, per-track stems — no DAW required.
+        </p>
+        <div class="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
+          <a
+            href="https://github.com/NPBibleChurch/stem-exporter/releases"
+            class="w-full rounded-full bg-indigo-500 px-6 py-3 text-base font-semibold text-white transition hover:bg-indigo-400 sm:w-auto"
+          >
+            Download latest release
+          </a>
+          <a
+            href="https://github.com/NPBibleChurch/stem-exporter"
+            class="w-full rounded-full border border-white/15 px-6 py-3 text-base font-semibold text-white transition hover:bg-white/5 sm:w-auto"
+          >
+            View source on GitHub
+          </a>
+        </div>
+        <p class="mt-6 text-sm text-neutral-500">Requires macOS 14 (Sonoma) or later.</p>
+      </div>
+    </section>
+
+    <section id="features" class="border-t border-white/10 bg-neutral-900/40">
+      <div class="mx-auto max-w-6xl px-6 py-20">
+        <h2 class="text-center text-3xl font-bold tracking-tight text-white">
+          Everything the weekly export chore needs
+        </h2>
+        <div class="mt-14 grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
+          <div class="rounded-2xl border border-white/10 bg-white/5 p-6">
+            <h3 class="text-lg font-semibold text-white">Any channel count</h3>
+            <p class="mt-2 text-sm text-neutral-300">
+              Channel count is detected from the files themselves — not hardcoded, so other gear
+              or configurations still work.
+            </p>
+          </div>
+          <div class="rounded-2xl border border-white/10 bg-white/5 p-6">
+            <h3 class="text-lg font-semibold text-white">Automatic recombining</h3>
+            <p class="mt-2 text-sm text-neutral-300">
+              Split files from long sessions are automatically stitched back into continuous
+              per-track audio.
+            </p>
+          </div>
+          <div class="rounded-2xl border border-white/10 bg-white/5 p-6">
+            <h3 class="text-lg font-semibold text-white">Saved track templates</h3>
+            <p class="mt-2 text-sm text-neutral-300">
+              Track 1 → "Piano", Track 2 → "Violin" — save a naming template once and reuse it
+              every week.
+            </p>
+          </div>
+          <div class="rounded-2xl border border-white/10 bg-white/5 p-6">
+            <h3 class="text-lg font-semibold text-white">Stereo-linked pairs</h3>
+            <p class="mt-2 text-sm text-neutral-300">
+              Map tracks like 7+8 to "Overheads L/R" and export them as a single interleaved
+              stereo file.
+            </p>
+          </div>
+          <div class="rounded-2xl border border-white/10 bg-white/5 p-6">
+            <h3 class="text-lg font-semibold text-white">One trim for the whole session</h3>
+            <p class="mt-2 text-sm text-neutral-300">
+              Cut dead air before and after the service with a single start/end point applied to
+              every stem.
+            </p>
+          </div>
+          <div class="rounded-2xl border border-white/10 bg-white/5 p-6">
+            <h3 class="text-lg font-semibold text-white">Batch export</h3>
+            <p class="mt-2 text-sm text-neutral-300">
+              Export every resulting stem in one batch, quickly and reliably, to a chosen folder.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="how-it-works" class="border-t border-white/10">
+      <div class="mx-auto max-w-6xl px-6 py-20">
+        <h2 class="text-center text-3xl font-bold tracking-tight text-white">How it works</h2>
+        <ol class="mx-auto mt-14 grid max-w-4xl gap-8 sm:grid-cols-3">
+          <li class="text-center">
+            <div
+              class="mx-auto mb-4 flex h-10 w-10 items-center justify-center rounded-full bg-indigo-500 text-sm font-bold text-white"
+            >
+              1
+            </div>
+            <h3 class="font-semibold text-white">Add a session folder</h3>
+            <p class="mt-2 text-sm text-neutral-300">
+              Point the app at a folder of WAVs — one file or many.
+            </p>
+          </li>
+          <li class="text-center">
+            <div
+              class="mx-auto mb-4 flex h-10 w-10 items-center justify-center rounded-full bg-indigo-500 text-sm font-bold text-white"
+            >
+              2
+            </div>
+            <h3 class="font-semibold text-white">Pick a template and trim</h3>
+            <p class="mt-2 text-sm text-neutral-300">
+              Choose a saved track name template, then trim the session's start and end.
+            </p>
+          </li>
+          <li class="text-center">
+            <div
+              class="mx-auto mb-4 flex h-10 w-10 items-center justify-center rounded-full bg-indigo-500 text-sm font-bold text-white"
+            >
+              3
+            </div>
+            <h3 class="font-semibold text-white">Export</h3>
+            <p class="mt-2 text-sm text-neutral-300">
+              Batch export every named, trimmed stem to a chosen folder.
+            </p>
+          </li>
+        </ol>
+      </div>
+    </section>
+
+    <section class="border-t border-white/10 bg-neutral-900/40">
+      <div class="mx-auto max-w-3xl px-6 py-20 text-center">
+        <h2 class="text-3xl font-bold tracking-tight text-white">Ready to try it?</h2>
+        <p class="mt-4 text-neutral-300">
+          Grab the latest build from GitHub releases and start exporting stems in minutes.
+        </p>
+        <a
+          href="https://github.com/NPBibleChurch/stem-exporter/releases"
+          class="mt-8 inline-block rounded-full bg-indigo-500 px-6 py-3 text-base font-semibold text-white transition hover:bg-indigo-400"
+        >
+          Download latest release
+        </a>
+      </div>
+    </section>
+  </main>
+
+  <footer class="border-t border-white/10">
+    <div
+      class="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 px-6 py-10 text-sm text-neutral-500 sm:flex-row"
+    >
+      <p>© <span id="year"></span> Stem Exporter. Built largely with AI assistance — use at your own risk.</p>
+      <a href="https://github.com/NPBibleChurch/stem-exporter" class="hover:text-neutral-300">
+        github.com/NPBibleChurch/stem-exporter
+      </a>
+    </div>
+  </footer>
+
+  <script>
+    document.getElementById("year").textContent = new Date().getFullYear();
+  </script>
+</body>
+</html>

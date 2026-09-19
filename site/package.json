@@ -1,0 +1,15 @@
+{
+  "name": "stem-exporter-site",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Marketing site for Stem Exporter",
+  "scripts": {
+    "build": "tailwindcss -i ./src/input.css -o ./public/app.css --minify",
+    "watch": "tailwindcss -i ./src/input.css -o ./public/app.css --watch"
+  },
+  "license": "ISC",
+  "devDependencies": {
+    "@tailwindcss/cli": "^4.3.3",
+    "tailwindcss": "^4.3.3"
+  }
+}
