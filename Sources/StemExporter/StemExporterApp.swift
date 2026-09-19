@@ -42,10 +42,7 @@ struct StemExporterApp: App {
         }
 
         CommandGroup(after: .newItem) {
-            Button("Choose Destination…") { model.chooseDestination() }
-                .keyboardShortcut("d", modifiers: [.command, .shift])
-            Divider()
-            Button("Export All") { model.startExport() }
+            Button("Export All…") { model.startExport() }
                 .keyboardShortcut("e", modifiers: .command)
                 .disabled(!model.canExport)
         }

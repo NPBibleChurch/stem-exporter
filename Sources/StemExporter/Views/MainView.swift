@@ -134,26 +134,14 @@ struct MainView: View {
 
         ToolbarItem {
             Button {
-                model.chooseDestination()
-            } label: {
-                Label(
-                    model.destination.map { "To: \($0.lastPathComponent)" } ?? "Choose Destination…",
-                    systemImage: "folder"
-                )
-            }
-            .help(model.destination?.path ?? "Pick where the stems should be written")
-        }
-
-        ToolbarItem {
-            Button {
                 model.startExport()
             } label: {
-                Text("Export All (\(model.exportingStems.count))")
+                Text("Export All (\(model.exportingStems.count))…")
                     .fontWeight(.semibold)
             }
             .buttonStyle(.borderedProminent)
             .disabled(!model.canExport)
-            .help(model.exportBlockReason ?? "Render every included stem into the destination folder")
+            .help(model.exportBlockReason ?? "Choose a folder and render every included stem into it")
         }
     }
 

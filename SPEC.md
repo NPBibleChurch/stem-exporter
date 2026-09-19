@@ -30,9 +30,8 @@ A native macOS app that automates a weekly manual task: turning a 32-track polyp
 2. **Pick a template.** Choose a saved track name template from a dropdown, or start from "No template" and name tracks manually this once.
 3. **Review tracks.** A table lists every resulting output stem (after stereo pairs are merged) with its assigned name, source track number(s), and a small waveform. Any track without a template match shows as "Track N" and can be renamed or excluded inline. Gain is also editable right here per track — a session-level override on top of the template's default — and the waveform updates live as it's adjusted.
 4. **Set the trim.** Scrub a combined waveform (a rough mono summary of all tracks) to set one In point and one Out point for the whole session.
-5. **Choose destination.** Pick (or reuse the last) output folder.
-6. **Export.** One click renders every stem, trimmed, into that folder. A progress view shows per-track progress and total time remaining; the app can continue exporting while the user works in other apps.
-7. **Done.** A summary shows the files written, with a "Reveal in Finder" button and any warnings (e.g. a track that clipped, a name collision).
+5. **Export.** One click opens a folder picker — starting at the last-used folder, so a repeat export is a single extra keystroke — and then renders every stem, trimmed, into the folder chosen. A progress view shows per-track progress and total time remaining; the app can continue exporting while the user works in other apps.
+6. **Done.** A summary shows the files written, with a "Reveal in Finder" button and any warnings (e.g. a track that clipped, a name collision).
 
 ## Track name templates
 
@@ -75,7 +74,7 @@ One global In point and one Out point apply to every output stem, since all 32 t
 - **Format:** WAV (BWF), same bit depth and sample rate as the source — no resampling or conversion in v1 (source is typically 24-bit/48kHz).
 - **File naming:** `<Session Name> - <Track#> - <Track Name>.wav by default (e.g. "2026-09-13 Service - 03 - Piano.wav"), track number zero-padded to two digits so Finder sorts stems in input order; session name editable per export, pattern itself configurable later`.
 - **Stereo pairs:** exported as one interleaved stereo WAV, not two mono files.
-- **Destination:** a chosen folder; the app remembers and defaults to the last-used folder, with an option to create a dated subfolder per session automatically.
+- **Destination:** asked for when Export is pressed, not configured beforehand; the picker opens at the last-used folder, with an option to create a dated subfolder per session automatically.
 - **Collisions:** if a file of the same name exists, the app asks once (per export) whether to overwrite, or auto-append " (2)".
 - **Metadata:** each exported stem carries basic BWF metadata (original timestamp, source file reference) for traceability back to the session.
 

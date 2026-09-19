@@ -463,17 +463,22 @@ final class AppModel {
 
     // MARK: Destination
 
-    func chooseDestination() {
+    /// Asked for at the moment Export is pressed rather than set up beforehand,
+    /// so the choice is made with the session in front of you. The last folder
+    /// used is where the panel opens, which makes a run of exports to the same
+    /// place a single extra keystroke.
+    private func promptForDestination() -> URL? {
         let panel = NSOpenPanel()
         panel.canChooseDirectories = true
         panel.canChooseFiles = false
         panel.canCreateDirectories = true
-        panel.prompt = "Choose"
+        panel.prompt = "Export"
         panel.message = "Where should the stems be written?"
-        panel.directoryURL = destination
-        guard panel.runModal() == .OK, let url = panel.url else { return }
+        panel.directoryURL = destination ?? preferences.lastDestination
+        guard panel.runModal() == .OK, let url = panel.url else { return nil }
         destination = url
         preferences.lastDestination = url
+        return url
     }
 
     // MARK: Export
@@ -494,11 +499,7 @@ final class AppModel {
 
     func startExport() {
         guard let session else { return }
-        guard let folder = destination ?? preferences.lastDestination else {
-            chooseDestination()
-            if destination != nil { startExport() }
-            return
-        }
+        guard let folder = promptForDestination() else { return }
 
         let job = ExportJob(
             outputFolder: folder,

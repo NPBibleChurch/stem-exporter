@@ -293,12 +293,6 @@ struct ExportDefaultsSettings: View {
             }
 
             Section("Destination") {
-                LabeledContent("Last used") {
-                    Text(model.destination?.path ?? "None yet")
-                        .foregroundStyle(palette.secondaryLabel)
-                        .lineLimit(1)
-                        .truncationMode(.head)
-                }
                 Toggle("Create a dated subfolder for each export", isOn: $datedSubfolder)
                     .onChange(of: datedSubfolder) { _, value in
                         model.preferences.createDatedSubfolder = value

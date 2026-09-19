@@ -124,8 +124,7 @@ it to another Mac is a file copy.
 | | |
 |---|---|
 | `⌘O` | Add session folder |
-| `⇧⌘D` | Choose destination |
-| `⌘E` | Export all |
+| `⌘E` | Export all (asks where to write) |
 | `Space` | Play / pause |
 | `I` / `O` | Mark In / Out at the playhead |
 | `⇧⌘S` | Snap to silence |
