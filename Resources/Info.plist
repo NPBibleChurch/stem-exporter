@@ -4,15 +4,17 @@
 <dict>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>en</string>
+	<key>CFBundleDisplayName</key>
+	<string>Stem Exporter</string>
 	<key>CFBundleExecutable</key>
 	<string>StemExporter</string>
+	<key>CFBundleIconFile</key>
+	<string>AppIcon</string>
 	<key>CFBundleIdentifier</key>
-	<string>com.noahprail.StemExporter</string>
+	<string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleName</key>
-	<string>Stem Exporter</string>
-	<key>CFBundleDisplayName</key>
 	<string>Stem Exporter</string>
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
@@ -20,18 +22,16 @@
 	<string>1.0</string>
 	<key>CFBundleVersion</key>
 	<string>1</string>
-	<key>CFBundleIconFile</key>
-	<string>AppIcon</string>
-	<key>LSMinimumSystemVersion</key>
-	<string>14.0</string>
 	<key>LSApplicationCategoryType</key>
 	<string>public.app-category.music</string>
+	<key>LSMinimumSystemVersion</key>
+	<string>14.0</string>
 	<key>NSHighResolutionCapable</key>
 	<true/>
-	<key>NSPrincipalClass</key>
-	<string>NSApplication</string>
 	<key>NSHumanReadableCopyright</key>
 	<string>Stem Exporter</string>
+	<key>NSPrincipalClass</key>
+	<string>NSApplication</string>
 	<key>NSSupportsAutomaticTermination</key>
 	<false/>
 	<key>NSSupportsSuddenTermination</key>
