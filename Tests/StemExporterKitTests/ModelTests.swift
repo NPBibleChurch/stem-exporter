@@ -156,6 +156,59 @@ final class TemplateResolutionTests: XCTestCase {
     }
 }
 
+final class SessionNameTests: XCTestCase {
+
+    private func session(folder: String, name: String? = nil) -> Session {
+        let url = URL(fileURLWithPath: folder)
+        let format = AudioFormat(channelCount: 4, sampleRate: 48_000, bitDepth: 24)
+        let part = SessionFile(
+            url: url.appendingPathComponent("00000001.WAV"),
+            format: format,
+            dataOffset: 44,
+            frameCount: 480_000
+        )
+        return Session(
+            folderURL: url,
+            parts: [part],
+            format: format,
+            name: name ?? SessionLoader.defaultSessionName(for: url)
+        )
+    }
+
+    func testImportedSessionStartsOnTheFolderName() {
+        let session = self.session(folder: "/tmp/5D319CBD")
+        XCTAssertEqual(session.name, "5D319CBD")
+        XCTAssertFalse(session.hasCustomName)
+    }
+
+    func testRenamingTrimsAndSticks() {
+        var session = self.session(folder: "/tmp/5D319CBD")
+        session.rename(to: "  2026-09-13 Service  ")
+        XCTAssertEqual(session.name, "2026-09-13 Service")
+        XCTAssertTrue(session.hasCustomName)
+    }
+
+    func testClearingTheNameFallsBackToTheFolderName() {
+        var session = self.session(folder: "/tmp/5D319CBD", name: "Service")
+        session.rename(to: "   ")
+        XCTAssertEqual(session.name, "5D319CBD")
+        XCTAssertFalse(session.hasCustomName)
+    }
+
+    func testARenamedSessionNamesTheExportedFiles() {
+        var session = self.session(folder: "/tmp/5D319CBD")
+        session.rename(to: "Youth Band: take 2")
+        let name = NamingPattern.default.fileName(
+            session: session.name,
+            trackNumbers: [3],
+            stemName: "Piano",
+            trackCount: session.trackCount
+        )
+        // Illegal characters are the filename layer's problem, not the field's.
+        XCTAssertEqual(name, "Youth Band- take 2 - 03 - Piano")
+    }
+}
+
 final class NamingTests: XCTestCase {
 
     func testDefaultPatternZeroPadsForFinderSorting() {

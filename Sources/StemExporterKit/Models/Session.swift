@@ -109,6 +109,22 @@ public struct Session: Sendable {
         self.trimOutFrames = parts.filter { !$0.isExcluded }.reduce(0) { $0 + $1.frameCount }
     }
 
+    // MARK: Name
+
+    /// What the session would be called with nothing typed: the folder's name.
+    public var defaultName: String { SessionLoader.defaultSessionName(for: folderURL) }
+
+    /// True once the name is something other than the folder's.
+    public var hasCustomName: Bool { name != defaultName }
+
+    /// Rename the session. The name only reaches exported filenames, so it's kept
+    /// as typed and sanitised at that point; a blank one falls back to the folder
+    /// name rather than writing files with a hole where the name should be.
+    public mutating func rename(to newName: String) {
+        let trimmed = newName.trimmingCharacters(in: .whitespacesAndNewlines)
+        name = trimmed.isEmpty ? defaultName : trimmed
+    }
+
     // MARK: Timeline
 
     public var includedParts: [SessionFile] { parts.filter { !$0.isExcluded } }

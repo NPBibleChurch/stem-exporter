@@ -187,6 +187,20 @@ final class AppModel {
         }
     }
 
+    /// Rename the loaded session. The name is what lands in every exported
+    /// filename, so this is the one field that has to be editable after import —
+    /// the folder the recorder wrote is rarely what the stems should be called.
+    func renameSession(_ name: String) {
+        guard session != nil else { return }
+        session?.rename(to: name)
+    }
+
+    /// Put the folder's own name back.
+    func resetSessionName() {
+        guard let session else { return }
+        self.session?.name = session.defaultName
+    }
+
     func setGain(_ dB: Double, forTrack track: Int) {
         guard session != nil else { return }
         let clamped = min(max(dB, -60), 24)

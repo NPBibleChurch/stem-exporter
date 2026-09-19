@@ -31,6 +31,8 @@ struct SessionSidebar: View {
             SectionHeader("Session")
 
             if let session = model.session {
+                SessionNameField(session: session)
+
                 VStack(spacing: 2) {
                     InfoRow(label: "Parts", value: "\(session.includedParts.count) file\(session.includedParts.count == 1 ? "" : "s")")
                     if let first = session.includedParts.first, let last = session.includedParts.last {
@@ -153,6 +155,67 @@ struct SessionSidebar: View {
 }
 
 // MARK: - Pieces
+
+/// The session name lands in every exported filename, and the folder the recorder
+/// wrote it to is rarely what the stems should be called — so it's editable right
+/// where the session is described, not buried in the export sheet.
+private struct SessionNameField: View {
+    let session: Session
+
+    @Environment(AppModel.self) private var model
+    @Environment(\.palette) private var palette
+    @State private var draft: String = ""
+    @FocusState private var isFocused: Bool
+
+    var body: some View {
+        HStack(spacing: 2) {
+            TextField("Session name", text: $draft)
+                .textFieldStyle(.plain)
+                .font(.system(size: 13, weight: .medium))
+                .foregroundStyle(palette.label)
+                .focused($isFocused)
+                .lineLimit(1)
+                .padding(.horizontal, 6)
+                .padding(.vertical, 4)
+                .background(
+                    RoundedRectangle(cornerRadius: 5)
+                        .fill(isFocused ? palette.controlBackground : .clear)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 5)
+                                .stroke(isFocused ? palette.accent : palette.controlBorder.opacity(0.5),
+                                        lineWidth: 1)
+                        )
+                )
+                .onSubmit(commit)
+                .onChange(of: isFocused) { _, focused in if !focused { commit() } }
+                .help("Goes into every exported filename. Clear it to go back to the folder name.")
+
+            if session.hasCustomName {
+                Button {
+                    model.resetSessionName()
+                } label: {
+                    Image(systemName: "arrow.uturn.backward")
+                        .font(.system(size: 10, weight: .semibold))
+                        .foregroundStyle(palette.tertiaryLabel)
+                        .frame(width: 18, height: 18)
+                }
+                .buttonStyle(.plain)
+                .help("Back to the folder name \u{201C}\(session.defaultName)\u{201D}")
+            }
+        }
+        .padding(.leading, -6)
+        .onAppear { draft = session.name }
+        // A rename from anywhere else — or a new session — refills the field, but
+        // not while it's being typed into.
+        .onChange(of: session.name) { _, name in if !isFocused { draft = name } }
+    }
+
+    private func commit() {
+        model.renameSession(draft)
+        // A blank entry falls back to the folder name; show what actually stuck.
+        draft = model.session?.name ?? draft
+    }
+}
 
 struct SectionHeader: View {
     let title: String
