@@ -50,6 +50,16 @@ struct StemExporterApp: App {
                 .disabled(!model.canExport)
         }
 
+        CommandMenu("Playback") {
+            // Home and End live here rather than in the window's hidden
+            // shortcuts because, unlike Space or the arrows, they can't be typed
+            // into a name or timecode field.
+            Button("Playhead to In Point") { model.movePlayheadToTrimIn() }
+                .keyboardShortcut(.home, modifiers: [])
+            Button("Playhead to Out Point") { model.movePlayheadToTrimOut() }
+                .keyboardShortcut(.end, modifiers: [])
+        }
+
         CommandMenu("Trim") {
             Button("Mark In at Playhead") { model.markInAtPlayhead() }
                 .keyboardShortcut("i", modifiers: [])

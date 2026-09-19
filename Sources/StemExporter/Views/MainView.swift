@@ -160,19 +160,30 @@ struct MainView: View {
     // MARK: Keyboard
 
     /// QuickTime-style marking: I and O set the handles at the playhead, Space
-    /// starts and stops playback.
+    /// starts and stops playback, and the arrows walk the playhead — coarse on
+    /// their own, 10 seconds with Shift, a tenth of a second with Option, so the
+    /// same keys cover both "find the song" and "find the downbeat".
     private var keyboardShortcuts: some View {
         Group {
             Button("") { model.markInAtPlayhead() }
                 .keyboardShortcut("i", modifiers: [])
             Button("") { model.markOutAtPlayhead() }
                 .keyboardShortcut("o", modifiers: [])
-            Button("") {
-                model.player.togglePlay(from: model.player.currentTime > 0
-                                        ? model.player.currentTime
-                                        : (model.session?.trimInSeconds ?? 0))
-            }
-            .keyboardShortcut(.space, modifiers: [])
+            Button("") { model.player.togglePlay() }
+                .keyboardShortcut(.space, modifiers: [])
+
+            Button("") { model.nudgePlayhead(by: -1) }
+                .keyboardShortcut(.leftArrow, modifiers: [])
+            Button("") { model.nudgePlayhead(by: 1) }
+                .keyboardShortcut(.rightArrow, modifiers: [])
+            Button("") { model.nudgePlayhead(by: -10) }
+                .keyboardShortcut(.leftArrow, modifiers: .shift)
+            Button("") { model.nudgePlayhead(by: 10) }
+                .keyboardShortcut(.rightArrow, modifiers: .shift)
+            Button("") { model.nudgePlayhead(by: -0.1) }
+                .keyboardShortcut(.leftArrow, modifiers: .option)
+            Button("") { model.nudgePlayhead(by: 0.1) }
+                .keyboardShortcut(.rightArrow, modifiers: .option)
         }
         .opacity(0)
         .frame(width: 0, height: 0)

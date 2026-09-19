@@ -34,6 +34,8 @@ struct Palette: Equatable {
     var trimHandle: Color
     var trimShade: Color
     var trimRegion: Color
+    var playhead: Color
+    var playheadGuide: Color
 
     var warningBackground: Color
     var warningBorder: Color
@@ -63,6 +65,8 @@ struct Palette: Equatable {
         trimHandle: Color(hex: 0xFF9F0A),
         trimShade: Color(red: 0.47, green: 0.51, blue: 0.55, opacity: 0.35),
         trimRegion: Color(hex: 0xFF9F0A).opacity(0.08),
+        playhead: Color(hex: 0x1D1D1F),
+        playheadGuide: Color(hex: 0x1D1D1F).opacity(0.22),
         warningBackground: Color(hex: 0xFFF6E5),
         warningBorder: Color(hex: 0xFFE1A6),
         warningLabel: Color(hex: 0x8A5A00)
@@ -92,6 +96,8 @@ struct Palette: Equatable {
         trimHandle: Color(hex: 0xFFB340),
         trimShade: Color(red: 0.05, green: 0.05, blue: 0.06, opacity: 0.55),
         trimRegion: Color(hex: 0xFFB340).opacity(0.10),
+        playhead: Color(hex: 0xF2F2F7),
+        playheadGuide: Color(hex: 0xF2F2F7).opacity(0.28),
         warningBackground: Color(hex: 0x3A2E14),
         warningBorder: Color(hex: 0x5C4718),
         warningLabel: Color(hex: 0xF5C463)

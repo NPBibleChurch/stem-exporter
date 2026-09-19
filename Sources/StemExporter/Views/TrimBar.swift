@@ -1,3 +1,4 @@
+import AppKit
 import SwiftUI
 import StemExporterKit
 
@@ -12,9 +13,19 @@ struct TrimBar: View {
 
     @State private var inDraft = ""
     @State private var outDraft = ""
-    @State private var dragging: Handle?
+    @State private var dragging: Grab?
+    @State private var hoverX: CGFloat?
 
-    private enum Handle { case start, end }
+    /// What a press in the scrubber took hold of.
+    private enum Grab: Equatable { case trimIn, trimOut, playhead }
+
+    private enum Metrics {
+        /// How close a press has to land to count as grabbing a handle rather
+        /// than dropping the playhead. Roughly a fingertip at trackpad speed.
+        static let grabRadius: CGFloat = 9
+        static let knobWidth: CGFloat = 11
+        static let knobHeight: CGFloat = 9
+    }
 
     var body: some View {
         VStack(spacing: 8) {
@@ -36,7 +47,7 @@ struct TrimBar: View {
     private var controls: some View {
         HStack(spacing: 10) {
             Button {
-                model.player.togglePlay(from: playheadSeconds)
+                model.player.togglePlay()
             } label: {
                 Image(systemName: model.player.isPlaying ? "pause.fill" : "play.fill")
                     .font(.system(size: 10))
@@ -49,9 +60,14 @@ struct TrimBar: View {
             }
             .buttonStyle(.plain)
             .disabled(model.session == nil)
-            .help("Play from the In point (Space)")
+            .help("Play from the playhead (Space)")
 
-            Text("Trim (applies to all \(model.exportingStems.count) stems)")
+            Text(Timecode.string(from: model.playheadSeconds))
+                .font(.monoDigits(12.5, weight: .semibold))
+                .foregroundStyle(model.session == nil ? palette.tertiaryLabel : palette.label)
+                .help("Playhead — drag it in the bar below, or nudge it with ← and → (⇧ for 10s, ⌥ for 0.1s)")
+
+            Text("Trim (all \(model.exportingStems.count) stems)")
                 .font(.system(size: 12))
                 .foregroundStyle(palette.secondaryLabel)
 
@@ -88,6 +104,7 @@ struct TrimBar: View {
             let height = geo.size.height
             let inX = width * inFraction
             let outX = width * outFraction
+            let playX = width * playheadFraction
 
             ZStack(alignment: .topLeading) {
                 RoundedRectangle(cornerRadius: 6)
@@ -110,41 +127,120 @@ struct TrimBar: View {
                     .frame(width: max(0, outX - inX))
                     .offset(x: inX)
 
-                if model.player.isAvailable, model.player.currentTime > 0 || model.player.isPlaying {
+                // A preview of where a click would drop the playhead, so the bar
+                // reads as scrubbable before you press.
+                if let hoverX, dragging == nil, model.session != nil,
+                   target(at: hoverX, width: width) == nil {
                     Rectangle()
-                        .fill(palette.label)
-                        .frame(width: 1)
-                        .offset(x: width * playheadFraction)
+                        .fill(palette.playheadGuide)
+                        .frame(width: 1, height: height)
+                        .offset(x: hoverX)
                 }
 
-                handle(at: inX, height: height, edge: .start)
-                handle(at: outX, height: height, edge: .end)
+                handle(at: inX, height: height)
+                handle(at: outX, height: height)
+
+                if model.player.isAvailable {
+                    playhead(at: playX, height: height)
+                }
             }
             .clipShape(RoundedRectangle(cornerRadius: 6))
             .contentShape(Rectangle())
             .gesture(
                 DragGesture(minimumDistance: 0)
                     .onChanged { value in
-                        guard model.session != nil else { return }
+                        guard model.session != nil, width > 0 else { return }
+                        let grab = dragging ?? beginDrag(at: value.startLocation.x, width: width)
                         let fraction = min(max(0, value.location.x / width), 1)
-                        let handle = dragging ?? nearestHandle(to: value.startLocation.x / width)
-                        dragging = handle
-                        switch handle {
-                        case .start: model.setTrimInFraction(fraction)
-                        case .end: model.setTrimOutFraction(fraction)
+                        switch grab {
+                        case .trimIn: model.setTrimInFraction(fraction)
+                        case .trimOut: model.setTrimOutFraction(fraction)
+                        case .playhead: model.scrubPlayhead(toFraction: fraction)
                         }
                     }
-                    .onEnded { _ in dragging = nil }
+                    .onEnded { _ in
+                        if dragging == .playhead { model.endScrub() }
+                        dragging = nil
+                    }
             )
+            .onContinuousHover { phase in
+                guard model.session != nil, width > 0 else { return }
+                switch phase {
+                case .active(let point):
+                    hoverX = min(max(0, point.x), width)
+                    cursor(for: dragging ?? target(at: point.x, width: width)).set()
+                case .ended:
+                    hoverX = nil
+                    NSCursor.arrow.set()
+                }
+            }
         }
     }
 
-    private func handle(at x: CGFloat, height: CGFloat, edge: Handle) -> some View {
+    /// Work out what a press took hold of and latch it for the rest of the drag.
+    ///
+    /// The handles own a narrow band on either side of themselves; everything
+    /// else in the bar belongs to the playhead. That way clicking in the middle
+    /// of the waveform auditions from there instead of yanking a trim handle
+    /// across the whole session.
+    private func beginDrag(at x: CGFloat, width: CGFloat) -> Grab {
+        let grab = target(at: x, width: width) ?? .playhead
+        if grab == .playhead { model.beginScrub() }
+        dragging = grab
+        return grab
+    }
+
+    /// The grabbable thing under `x`, or nil if the press landed in open bar.
+    private func target(at x: CGFloat, width: CGFloat) -> Grab? {
+        let candidates: [(Grab, CGFloat)] = [
+            (.trimIn, abs(x - width * inFraction)),
+            (.trimOut, abs(x - width * outFraction)),
+            (.playhead, abs(x - width * playheadFraction)),
+        ]
+        // Ties go to the handles, which are listed first. They overlap the
+        // playhead exactly on a freshly loaded session, and a handle can only be
+        // caught inside this narrow band, whereas the playhead can also be
+        // placed by clicking anywhere else in the bar.
+        guard let nearest = candidates.min(by: { $0.1 < $1.1 }), nearest.1 <= Metrics.grabRadius else {
+            return nil
+        }
+        return nearest.0
+    }
+
+    private func cursor(for grab: Grab?) -> NSCursor {
+        switch grab {
+        case .trimIn, .trimOut: return .resizeLeftRight
+        case .playhead: return dragging == .playhead ? .closedHand : .openHand
+        case nil: return .arrow
+        }
+    }
+
+    private func handle(at x: CGFloat, height: CGFloat) -> some View {
         Rectangle()
             .fill(palette.trimHandle)
             .frame(width: 3, height: height)
             .offset(x: max(0, x - 1.5))
             .shadow(color: palette.trimHandle.opacity(0.4), radius: 2)
+    }
+
+    /// The playhead is a line plus a knob at the top: the line reads the
+    /// position off the waveform, the knob advertises that it can be dragged.
+    private func playhead(at x: CGFloat, height: CGFloat) -> some View {
+        let grabbed = dragging == .playhead
+        return VStack(spacing: 0) {
+            Capsule()
+                .fill(palette.playhead)
+                .frame(width: Metrics.knobWidth, height: Metrics.knobHeight)
+                .scaleEffect(grabbed ? 1.15 : 1)
+            Rectangle()
+                .fill(palette.playhead)
+                .frame(width: grabbed ? 2 : 1)
+        }
+        .frame(width: Metrics.knobWidth, height: height, alignment: .top)
+        .shadow(color: .black.opacity(0.28), radius: 1.5, x: 0, y: 0)
+        .offset(x: x - Metrics.knobWidth / 2)
+        .animation(.easeOut(duration: 0.1), value: grabbed)
+        .allowsHitTesting(false)
     }
 
     /// The mix waveform is drawn in a muted colour, so give it a palette whose
@@ -170,14 +266,6 @@ struct TrimBar: View {
     private var playheadFraction: Double {
         guard let session = model.session, session.totalDuration > 0 else { return 0 }
         return min(max(0, model.player.currentTime / session.totalDuration), 1)
-    }
-
-    private var playheadSeconds: TimeInterval {
-        model.player.currentTime > 0 ? model.player.currentTime : (model.session?.trimInSeconds ?? 0)
-    }
-
-    private func nearestHandle(to fraction: Double) -> Handle {
-        abs(fraction - inFraction) <= abs(fraction - outFraction) ? .start : .end
     }
 
     // MARK: Timecode fields

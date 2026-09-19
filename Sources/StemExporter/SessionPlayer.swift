@@ -15,6 +15,8 @@ final class SessionPlayer {
     private(set) var isPlaying = false
     private(set) var currentTime: TimeInterval = 0
     private(set) var isAvailable = false
+    /// True while the playhead is being dragged.
+    private(set) var isScrubbing = false
 
     private let engine = AVAudioEngine()
     private let node = AVAudioPlayerNode()
@@ -29,6 +31,7 @@ final class SessionPlayer {
     private var pendingBuffers = 0
     private var displayTimer: Timer?
     private var generation = 0
+    private var resumeAfterScrub = false
 
     private let bufferFrames = 16_384
     private let maxPendingBuffers = 4
@@ -66,6 +69,11 @@ final class SessionPlayer {
     }
 
     // MARK: Transport
+
+    /// Space bar: start at the playhead, and leave it wherever it stopped.
+    func togglePlay() {
+        togglePlay(from: currentTime)
+    }
 
     func togglePlay(from seconds: TimeInterval) {
         if isPlaying {
@@ -112,6 +120,10 @@ final class SessionPlayer {
 
     private func stopPlayback(resetTime: Bool) {
         generation += 1
+        if resetTime {
+            isScrubbing = false
+            resumeAfterScrub = false
+        }
         displayTimer?.invalidate()
         displayTimer = nil
         if node.isPlaying { node.stop() }
@@ -121,12 +133,52 @@ final class SessionPlayer {
         if resetTime { currentTime = 0 }
     }
 
+    /// Move the playhead. Seeking mid-playback restarts the stream there, so
+    /// what you hear always matches where the playhead sits.
     func seek(to seconds: TimeInterval) {
+        guard isAvailable else { return }
         if isPlaying {
             play(from: seconds)
         } else {
-            currentTime = max(0, min(seconds, Double(totalFrames) / sampleRate))
+            currentTime = clamped(seconds)
         }
+    }
+
+    // MARK: Scrubbing
+
+    /// Take hold of the playhead for a drag.
+    ///
+    /// Re-seeking on every mouse-move would restart the reader dozens of times a
+    /// second, so a scrub stops playback for its duration and remembers whether
+    /// it was running; `endScrub()` picks up from wherever the playhead landed.
+    func beginScrub() {
+        guard isAvailable, !isScrubbing else { return }
+        isScrubbing = true
+        resumeAfterScrub = isPlaying
+        if isPlaying { stopPlayback(resetTime: false) }
+    }
+
+    func scrub(to seconds: TimeInterval) {
+        guard isScrubbing else { return }
+        currentTime = clamped(seconds)
+    }
+
+    func endScrub() {
+        guard isScrubbing else { return }
+        isScrubbing = false
+        let resume = resumeAfterScrub
+        resumeAfterScrub = false
+        if resume { play(from: currentTime) }
+    }
+
+    // MARK: Bounds
+
+    var duration: TimeInterval {
+        sampleRate > 0 ? Double(totalFrames) / sampleRate : 0
+    }
+
+    private func clamped(_ seconds: TimeInterval) -> TimeInterval {
+        max(0, min(seconds, duration))
     }
 
     // MARK: Streaming

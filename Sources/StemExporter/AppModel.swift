@@ -325,6 +325,39 @@ final class AppModel {
     func markInAtPlayhead() { setTrimIn(seconds: player.currentTime) }
     func markOutAtPlayhead() { setTrimOut(seconds: player.currentTime) }
 
+    // MARK: Playhead
+
+    var playheadSeconds: TimeInterval { player.currentTime }
+
+    func movePlayhead(to seconds: TimeInterval) {
+        guard session != nil else { return }
+        player.seek(to: seconds)
+    }
+
+    func movePlayhead(toFraction fraction: Double) {
+        guard let session else { return }
+        movePlayhead(to: fraction * session.totalDuration)
+    }
+
+    /// Arrow-key nudges. The player clamps to the session bounds, so walking off
+    /// either end just parks the playhead there.
+    func nudgePlayhead(by seconds: TimeInterval) {
+        guard session != nil else { return }
+        player.seek(to: player.currentTime + seconds)
+    }
+
+    /// The two positions worth jumping back to while setting a trim.
+    func movePlayheadToTrimIn() { movePlayhead(to: session?.trimInSeconds ?? 0) }
+    func movePlayheadToTrimOut() { movePlayhead(to: session?.trimOutSeconds ?? 0) }
+
+    func beginScrub() { player.beginScrub() }
+    func endScrub() { player.endScrub() }
+
+    func scrubPlayhead(toFraction fraction: Double) {
+        guard let session else { return }
+        player.scrub(to: fraction * session.totalDuration)
+    }
+
     // MARK: Session import
 
     func chooseSessionFolder() {
@@ -423,6 +456,9 @@ final class AppModel {
     private func preparePlayer() {
         guard let session else { return }
         player.prepare(session: session)
+        // A fresh session starts cued at the In point rather than at zero, so the
+        // playhead is somewhere useful before it has ever been dragged.
+        player.seek(to: session.trimInSeconds)
     }
 
     // MARK: Destination
