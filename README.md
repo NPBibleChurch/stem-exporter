@@ -8,7 +8,7 @@ reduced to a couple of clicks.
 > and may be buggy. Use at your own risk, and back up your source recordings
 > before exporting.
 
-Built to [SPEC.md](SPEC.md)
+Built to [SPEC.md](SPEC.md) · [User guide](docs/USER-GUIDE.md)
 
 ## Requirements
 
