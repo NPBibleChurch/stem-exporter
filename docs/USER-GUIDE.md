@@ -1,9 +1,11 @@
 # Stem Exporter — User Guide
 
-Stem Exporter turns a folder of multichannel field-recorder WAVs into a folder of
-named, trimmed, per-track stems. The job it replaces is the weekly DAW chore:
-import the multitrack, name 32 channels, top and tail the recording, bounce each
-track out. Here it's a couple of clicks.
+Stem Exporter turns a folder of multichannel WAVs — from a Behringer Wing Live's
+multitrack recording, or any recorder that writes sample-synced multichannel
+WAVs, field recorders included — into a folder of named, trimmed, per-track
+stems. The job it replaces is the weekly DAW chore: import the multitrack, name
+32 channels, top and tail the recording, bounce each track out. Here it's a
+couple of clicks.
 
 > ⚠️ This project is vibe coded (built largely with AI assistance) and may be
 > buggy. Back up your source recordings before exporting.
